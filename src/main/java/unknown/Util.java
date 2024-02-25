@@ -116,6 +116,16 @@ public class Util {
     public static String URLEncode(String text) throws Exception{
         return URLEncoder.encode(text,"UTF-8");
     }
+
+    public static String byte2Hex(byte[] bytes){
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : bytes) {
+            hexString.append(String.format("%02x", b));
+        }
+        String hex = hexString.toString();
+
+        return hex;
+    }
     public static byte[][] splitByteArray(byte[] byteArray, int chunkSize) {
         int numOfChunks = (int) Math.ceil((double) byteArray.length / chunkSize);
         byte[][] result = new byte[numOfChunks][];
