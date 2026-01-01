@@ -113,7 +113,7 @@ idea打开源码，使用maven的package，得到一个jar。
 
 ### Tomcat
 
-FilterShell
+FilterShell2222
 
 ListenerShell
 
@@ -126,20 +126,6 @@ EvilController
 EvilControllerHigherVersion
 
 EvilInterceptor
-
-
-
-## AgentLoader
-
-用于运行时动态加载javaagent，无需添加JVM参数。适用于java8。
-
-使用方式：
-
-```
-new AgentLoader("这里填main方法所在类的全限定名").loadAgent("agent包的绝对路径");
-```
-
-
 
 
 

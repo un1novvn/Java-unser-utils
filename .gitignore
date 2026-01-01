@@ -1,0 +1,7 @@
+.idea/
+
+target/*
+!target/*.jar
+!target/classes/
+target/classes/*
+!target/classes/main_agent_AbstractAction.jar
